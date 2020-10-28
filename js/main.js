@@ -1,4 +1,7 @@
-'use strict';;
+'use strict';
+
+// import Swiper from 'https://unpkg.com/swiper/swiper-bundle.esm.browser.min.js';
+
 const $cartButton = document.querySelector('#cart-button');
 const $modal = document.querySelector('.modal');
 const $close = document.querySelector('.close');
@@ -6,7 +9,7 @@ const $buttonAuth = document.querySelector('.button-auth');
 const $modalAuth = document.querySelector('.modal-auth');
 const $closeAuth = document.querySelector('.close-auth');
 const $logInForm = document.querySelector('#logInForm');
-const $loginInput = document.querySelector('#login');
+const $loginInput = document.querySelector('#_login');
 const $passwordInput = document.querySelector('#password');
 const $userName = document.querySelector('.user-name');
 const $buttonOut = document.querySelector('.button-out');
@@ -16,9 +19,13 @@ const $restaurants = document.querySelector('.restaurants');
 const $menu = document.querySelector('.menu');
 const $logo = document.querySelector('.logo');
 const $cardsMenu = document.querySelector('.cards-menu');
-console.log($modalAuth);
 
-let login = localStorage.getItem('Delivery');
+let _login = localStorage.getItem('Delivery');
+
+const validName = str => {
+  const regName = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/;
+  return regName.test(str);
+};
 
 const toggleModal = () => $modal.classList.toggle('is-open');
 
@@ -39,7 +46,7 @@ $closeAuth.addEventListener('click', toggleModalAuth);
 
 const authorized = () => {
     const logOut = () => {
-      login = null;
+      _login = null;
       localStorage.removeItem('Delivery');
 
       $buttonAuth.style.display = '';
@@ -51,7 +58,7 @@ const authorized = () => {
       checkAuth();
     };
 
-    $userName.textContent = login;
+    $userName.textContent = _login;
 
     $buttonAuth.style.display = 'none';
     $userName.style.display = 'inline';
@@ -64,9 +71,9 @@ const notAuthorized = () => {
     const logIn = e => {
       e.preventDefault();
 
-      if ($loginInput.value.trim()) {
-        login = $loginInput.value;
-        localStorage.setItem('Delivery', login);
+      if (validName($loginInput.value)) {
+        _login = $loginInput.value;
+        localStorage.setItem('Delivery', _login);
 
         toggleModalAuth();
 
@@ -92,7 +99,7 @@ const notAuthorized = () => {
 
 $buttonAuth.addEventListener('click', clearForm);
 
-const checkAuth = () => login ? authorized() : notAuthorized();
+const checkAuth = () => _login ? authorized() : notAuthorized();
 
 checkAuth();
 
@@ -148,16 +155,18 @@ const createCardGood = () => {
 };
 
 const openGoods = ({ target }) => {
-  const restaurant = target.closest('.card-restaurant');
+  if (_login) {
+    const restaurant = target.closest('.card-restaurant');
 
-  if (restaurant) {
-    $cardsMenu.textContent = '';
-    $containerPromo.classList.add('hide');
-    $restaurants.classList.add('hide');
-    $menu.classList.remove('hide');
+    if (restaurant) {
+      $cardsMenu.textContent = '';
+      $containerPromo.classList.add('hide');
+      $restaurants.classList.add('hide');
+      $menu.classList.remove('hide');
 
-    createCardGood();
-  }
+      createCardGood();
+    }
+  } else {toggleModalAuth()}
 };
 
 $cartButton.addEventListener('click', toggleModal);
@@ -172,3 +181,29 @@ $logo.addEventListener('click', () => {
 
 checkAuth();
 createCardRestaurant();
+
+new Swiper('.swiper-container', {
+  sliderPerView: 1,
+  loop: true,
+  autoplay: true,
+  effect: 'cube',
+  grabCursor: true,
+  cubeEffect: {
+    shadow: false,
+  },
+  pagination: {
+    el: 'swiper-pagination',
+    clickable: true,
+  },
+});
+
+// new Swiper('.swiper-container', {
+//   sliderPerView: 1,
+//   loop: true,
+//   autoplay: true,
+//   effect: 'coverflow',
+//   scrollbar: {
+//     el: 'swiper-scrollbar',
+//     draggable: true,
+//   },
+// });

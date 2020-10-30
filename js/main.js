@@ -160,7 +160,7 @@ const createCardRestaurant = restaurant => {
 
 const createCardGood = goods => {
   const { description, id, image, name, price } = goods;
-
+console.log(goods);
   const $card = document.createElement('div');
   $card.className = 'card';
 
@@ -176,7 +176,7 @@ const createCardGood = goods => {
         </div>
       </div>
       <div class="card-buttons">
-        <button class="button button-primary button-add-cart id="${id}">
+        <button class="button button-primary button-add-cart" id="${id}">
           <span class="button-card-text">В корзину</span>
           <span class="button-cart-svg"></span>
         </button>
@@ -193,6 +193,8 @@ const openGoods = ({ target }) => {
     const restaurant = target.closest('.card-restaurant');
 
     if (restaurant) {
+      //const info = restaurant.dataset.info;
+      //const { name, kitchen, price, stars } = info.split(',');
       const { name, kitchen, price, stars } = restaurant.info;
 
       $cardsMenu.textContent = '';
@@ -218,13 +220,14 @@ const addToCart = ({ target }) => {
     const title = card.querySelector('.card-title-reg').textContent;
     const cost = card.querySelector('.card-price').textContent;
     const id = buttonAddToCart.id;
+    console.log(title, id, card);
 
     const food = _cart.find(item => item.id === id);
-    console.log(food);
+    console.log(food, 'FOOD find');
 
-    food ? food.count += 1 : _cart.push({id, title, cost, count: 1});
+    food ? food.count += 1 : _cart.push({id: id, title: title, cost, count: 1});
 
-    console.log(_cart);
+    console.log(_cart, 'CART after');
   }
 };
 
@@ -275,7 +278,7 @@ const init = () => {
   getData('./db/partners.json').then(data => data.forEach(createCardRestaurant));  
                                         //toggleModalAuth
   $cartButton.addEventListener('click', () => {
-    renderCard();
+    renderCart();
     toggleModal();
   });
   $buttonClearCart.addEventListener('click', () => {

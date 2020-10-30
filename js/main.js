@@ -9,7 +9,7 @@ const $buttonAuth = document.querySelector('.button-auth');
 const $modalAuth = document.querySelector('.modal-auth');
 const $closeAuth = document.querySelector('.close-auth');
 const $logInForm = document.querySelector('#logInForm');
-const $loginInput = document.querySelector('#_login');
+const $loginInput = document.querySelector('#login');
 const $passwordInput = document.querySelector('#password');
 const $userName = document.querySelector('.user-name');
 const $buttonOut = document.querySelector('.button-out');
@@ -20,6 +20,9 @@ const $menu = document.querySelector('.menu');
 const $logo = document.querySelector('.logo');
 const $cardsMenu = document.querySelector('.cards-menu');
 const $inputSearch = document.querySelector('.input-search');
+const $modalBody = document.querySelector('.modal-body');
+const $modalPrice = document.querySelector('.modal-pricetag');
+const $buttonClearCart = document.querySelector('.clear-cart');
 
 const $restaurantTitle = document.querySelector('.restaurant-title');
 const $restaurantRating = document.querySelector('.rating');
@@ -27,6 +30,7 @@ const $restaurantPrice = document.querySelector('.price');
 const $restaurantCategory = document.querySelector('.category');
 
 let _login = localStorage.getItem('Delivery');
+const _cart = [];
 
 const getData = async url => {
   const res = await fetch(url).then()
@@ -61,6 +65,8 @@ const clearForm = () => {
 // $buttonAuth.addEventListener('click', toggleModalAuth);
 // $closeAuth.addEventListener('click', toggleModalAuth);
 
+//  optional
+
 const authorized = () => {
     const logOut = () => {
       _login = null;
@@ -69,17 +75,20 @@ const authorized = () => {
       $buttonAuth.style.display = '';
       $userName.style.display = '';
       $buttonOut.style.display = '';
+      $cartButton.style.display = '';
 
       $buttonOut.removeEventListener('click', logOut);
 
       checkAuth();
+      //returnMain(); -> line 60
     };
 
     $userName.textContent = _login;
 
     $buttonAuth.style.display = 'none';
     $userName.style.display = 'inline';
-    $buttonOut.style.display = 'block';
+    $buttonOut.style.display = 'flex'; //block
+    $cartButton.style.display = 'flex'; //block
 
     $buttonOut.addEventListener('click', logOut);
 };
@@ -167,11 +176,11 @@ const createCardGood = goods => {
         </div>
       </div>
       <div class="card-buttons">
-        <button class="button button-primary button-add-cart">
+        <button class="button button-primary button-add-cart id="${id}">
           <span class="button-card-text">В корзину</span>
           <span class="button-cart-svg"></span>
         </button>
-        <strong class="card-price-bold">${price} ₽</strong>
+        <strong class="card-price card-price-bold">${price} ₽</strong>
       </div>
     </div>
   `);
@@ -201,12 +210,84 @@ const openGoods = ({ target }) => {
   } else {toggleModalAuth()}
 };
 
+const addToCart = ({ target }) => {
+  const buttonAddToCart = target.closest('.button-add-cart');
+
+  if (buttonAddToCart) {
+    const card = target.closest('.card');
+    const title = card.querySelector('.card-title-reg').textContent;
+    const cost = card.querySelector('.card-price').textContent;
+    const id = buttonAddToCart.id;
+
+    const food = _cart.find(item => item.id === id);
+    console.log(food);
+
+    food ? food.count += 1 : _cart.push({id, title, cost, count: 1});
+
+    console.log(_cart);
+  }
+};
+
+const renderCart = () => {
+  $modalBody.textContent = '';
+
+  _cart.forEach(item => {
+    const { id, title, cost, count } = item;
+
+    const $itemCart = `
+      <div class="food-row">
+        <span class="food-name">${title}</span>
+        <strong class="food-price">${cost} ₽</strong>
+        <div class="food-counter">
+          <button class="counter-button counter-minus" data-id=${id}>-</button>
+          <span class="counter">${count}</span>
+          <button class="counter-button counter-plus" data-id=${id}>+</button>
+        </div>
+      </div>
+    `;
+
+    $modalBody.insertAdjacentHTML('afterbegin', $itemCart);
+  });
+
+  const totalPriceSum = _cart.reduce((sum, item) => 
+    sum + (parseFloat(item.cost) * item.count), 0);
+
+  $modalPrice.textContent = `${totalPriceSum} ₽`;
+};
+
+const changeCount = ({ target }) => {
+  if (target.classList.contains('counter-button')) {
+    const food = _cart.find(item => item.id === target.dataset.id);
+
+    if (target.classList.contains('counter-minus')) {
+      food.count--;
+
+      food.count === 0 && _cart.splice(_cart.indexOf(food), 1);
+    }
+
+    target.classList.contains('counter-plus') && food.count++;
+
+    renderCart();
+  }
+};
+
 const init = () => {
   getData('./db/partners.json').then(data => data.forEach(createCardRestaurant));  
+                                        //toggleModalAuth
+  $cartButton.addEventListener('click', () => {
+    renderCard();
+    toggleModal();
+  });
+  $buttonClearCart.addEventListener('click', () => {
+    _cart.length = 0;
 
-  $cartButton.addEventListener('click', toggleModal);
+    renderCart();
+  });
+  $modalBody.addEventListener('click', changeCount);
+  $cardsMenu.addEventListener('click', addToCart);
   $close.addEventListener('click', toggleModal);
   $cardsRestaurants.addEventListener('click', openGoods);
+  //$logo.addEventListener('click', returnMain); -> line 60
 
   $logo.addEventListener('click', () => {
     $containerPromo.classList.remove('hide');

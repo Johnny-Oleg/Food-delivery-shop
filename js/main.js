@@ -1,6 +1,19 @@
 'use strict';
 
-// import Swiper from 'https://unpkg.com/swiper/swiper-bundle.esm.browser.min.js';
+const swiper = new Swiper('.swiper-container', {
+    sliderPerView: 1,
+    loop: true,
+    autoplay: true,
+    effect: 'cube',
+    grabCursor: true,
+    cubeEffect: {
+      shadow: false,
+    },
+    pagination: {
+      el: 'swiper-pagination',
+      clickable: true,
+    },
+});
 
 const $cartButton = document.querySelector('#cart-button');
 const $modal = document.querySelector('.modal');
@@ -23,6 +36,7 @@ const $inputSearch = document.querySelector('.input-search');
 const $modalBody = document.querySelector('.modal-body');
 const $modalPrice = document.querySelector('.modal-pricetag');
 const $buttonClearCart = document.querySelector('.clear-cart');
+// const $inputSearch = document.querySelector('.input-address');
 
 const $restaurantTitle = document.querySelector('.restaurant-title');
 const $restaurantRating = document.querySelector('.rating');
@@ -30,7 +44,16 @@ const $restaurantPrice = document.querySelector('.price');
 const $restaurantCategory = document.querySelector('.category');
 
 let _login = localStorage.getItem('Delivery');
-const _cart = [];
+const _cart = JSON.parse(localStorage.getItem(`Delivery_${_login}`)) || [];
+
+const saveCart = () => localStorage.setItem(`Delivery_${_login}`, JSON.stringify(_cart));
+
+const fetchCart = () => {
+  if (localStorage.getItem(`Delivery_${_login}`)) {
+    const data = JSON.parse(localStorage.getItem(`Delivery_${_login}`));
+    _cart.push(...data);
+  }
+};
 
 const getData = async url => {
   const res = await fetch(url).then()
@@ -65,11 +88,18 @@ const clearForm = () => {
 // $buttonAuth.addEventListener('click', toggleModalAuth);
 // $closeAuth.addEventListener('click', toggleModalAuth);
 
-//  optional
+//?  optional
+const returnMain = () => {
+  $containerPromo.classList.remove('hide');
+  swiper.init();
+  $restaurants.classList.remove('hide');
+  $menu.classList.add('hide');
+}
 
 const authorized = () => {
     const logOut = () => {
       _login = null;
+      _cart.length = 0;
       localStorage.removeItem('Delivery');
 
       $buttonAuth.style.display = '';
@@ -80,7 +110,7 @@ const authorized = () => {
       $buttonOut.removeEventListener('click', logOut);
 
       checkAuth();
-      //returnMain(); -> line 60
+      returnMain(); //-> line 69
     };
 
     $userName.textContent = _login;
@@ -102,6 +132,7 @@ const notAuthorized = () => {
         localStorage.setItem('Delivery', _login);
 
         toggleModalAuth();
+        fetchCart();
 
         $buttonAuth.removeEventListener('click', toggleModalAuth);
         $closeAuth.removeEventListener('click', toggleModalAuth);
@@ -199,6 +230,7 @@ const openGoods = ({ target }) => {
 
       $cardsMenu.textContent = '';
       $containerPromo.classList.add('hide');
+      swiper.destroy(false);
       $restaurants.classList.add('hide');
       $menu.classList.remove('hide');
 
@@ -225,9 +257,10 @@ const addToCart = ({ target }) => {
     const food = _cart.find(item => item.id === id);
     console.log(food, 'FOOD find');
 
-    food ? food.count += 1 : _cart.push({id: id, title: title, cost, count: 1});
+    food ? food.count += 1 : _cart.push({id, title, cost, count: 1});
 
     console.log(_cart, 'CART after');
+    saveCart();
   }
 };
 
@@ -256,6 +289,8 @@ const renderCart = () => {
     sum + (parseFloat(item.cost) * item.count), 0);
 
   $modalPrice.textContent = `${totalPriceSum} ₽`;
+
+  saveCart();
 };
 
 const changeCount = ({ target }) => {
@@ -271,6 +306,7 @@ const changeCount = ({ target }) => {
     target.classList.contains('counter-plus') && food.count++;
 
     renderCart();
+    // saveCart();
   }
 };
 
@@ -285,23 +321,25 @@ const init = () => {
     _cart.length = 0;
 
     renderCart();
+    toggleModal();//???
   });
   $modalBody.addEventListener('click', changeCount);
   $cardsMenu.addEventListener('click', addToCart);
   $close.addEventListener('click', toggleModal);
   $cardsRestaurants.addEventListener('click', openGoods);
-  //$logo.addEventListener('click', returnMain); -> line 60
+  $logo.addEventListener('click', returnMain); //?-> line 69
 
   $logo.addEventListener('click', () => {
     $containerPromo.classList.remove('hide');
+    swiper.init();
     $restaurants.classList.remove('hide');
     $menu.classList.add('hide');
   });
 
   checkAuth();
 
-  $inputSearch.addEventListener('keypress', e => {
-    if (e.charCode === '13') {
+  $inputSearch.addEventListener('keypress', e => { //keyup
+    if (e.charCode === 13) {
       const value = e.target.value.trim();
 
       if (!value) {
@@ -312,6 +350,8 @@ const init = () => {
 
         return;
       }
+
+      //if (value.length < 3) return;
 
       getData('./db/partners.json')
         .then(data => data.map(partner => partner.products))
@@ -326,6 +366,7 @@ const init = () => {
               });
 
               $containerPromo.classList.add('hide');
+              swiper.destroy(false);
               $restaurants.classList.add('hide');
               $menu.classList.remove('hide');
 
@@ -339,22 +380,6 @@ const init = () => {
           )
         });
     }  
-  });
-  
-
-  new Swiper('.swiper-container', {
-    sliderPerView: 1,
-    loop: true,
-    autoplay: true,
-    effect: 'cube',
-    grabCursor: true,
-    cubeEffect: {
-      shadow: false,
-    },
-    pagination: {
-      el: 'swiper-pagination',
-      clickable: true,
-    },
   });
 };  
 

@@ -191,11 +191,11 @@ const createCardRestaurant = restaurant => {
 
 const createCardGood = goods => {
   const { description, id, image, name, price } = goods;
-console.log(goods);
+// console.log(goods);
   const $card = document.createElement('div');
   $card.className = 'card';
 
-  $card.insertAdjacentHTML('beforeend', `
+  const $food = `
     <img src="${image}" alt=${name} class="card-image"/>
     <div class="card-text">
       <div class="card-heading">
@@ -214,8 +214,9 @@ console.log(goods);
         <strong class="card-price card-price-bold">${price} ₽</strong>
       </div>
     </div>
-  `);
+  `;
 
+  $card.insertAdjacentHTML('beforeend', $food);
   $cardsMenu.insertAdjacentElement('beforeend', $card);
 };
 
@@ -252,10 +253,10 @@ const addToCart = ({ target }) => {
     const title = card.querySelector('.card-title-reg').textContent;
     const cost = card.querySelector('.card-price').textContent;
     const id = buttonAddToCart.id;
-    console.log(title, id, card);
+    // console.log(title, id, card);
 
     const food = _cart.find(item => item.id === id);
-    console.log(food, 'FOOD find');
+    // console.log(food, 'FOOD find');
 
     food ? food.count += 1 : _cart.push({id, title, cost, count: 1});
 
@@ -311,8 +312,8 @@ const changeCount = ({ target }) => {
 };
 
 const init = () => {
-  getData('./db/partners.json').then(data => data.forEach(createCardRestaurant));  
-                                        //toggleModalAuth
+  getData('./db/partners.json').then(data => data.forEach(createCardRestaurant)); 
+
   $cartButton.addEventListener('click', () => {
     renderCart();
     toggleModal();
@@ -338,9 +339,10 @@ const init = () => {
 
   checkAuth();
 
-  $inputSearch.addEventListener('keypress', e => { //keyup
+  $inputSearch.addEventListener('keypress', e => { //keyup?
     if (e.charCode === 13) {
       const value = e.target.value.trim();
+      console.log(value, 'input');
 
       if (!value) {
         e.target.style.backgroundColor = '#ff0000';
@@ -357,12 +359,14 @@ const init = () => {
         .then(data => data.map(partner => partner.products))
         .then(linkProducts => {
           $cardsMenu.textContent = '';
+          console.log(linkProducts);
 
           linkProducts.forEach(link => getData(`./db/${link}`)
             .then(data => {
+              console.log(data, 'data');
               const resultSearch = data.filter(item => {
                 const name = item.name.toLowerCase();
-                name.includes(value.toLowerCase());
+                return name.includes(value.toLowerCase());
               });
 
               $containerPromo.classList.add('hide');

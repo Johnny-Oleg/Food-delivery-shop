@@ -36,7 +36,6 @@ const $inputSearch = document.querySelector('.input-search');
 const $modalBody = document.querySelector('.modal-body');
 const $modalPrice = document.querySelector('.modal-pricetag');
 const $buttonClearCart = document.querySelector('.clear-cart');
-// const $inputSearch = document.querySelector('.input-address');
 
 const $restaurantTitle = document.querySelector('.restaurant-title');
 const $restaurantRating = document.querySelector('.rating');
@@ -51,12 +50,13 @@ const saveCart = () => localStorage.setItem(`Delivery_${_login}`, JSON.stringify
 const fetchCart = () => {
   if (localStorage.getItem(`Delivery_${_login}`)) {
     const data = JSON.parse(localStorage.getItem(`Delivery_${_login}`));
+
     _cart.push(...data);
   }
 };
 
 const getData = async url => {
-  const res = await fetch(url).then()
+  const res = await fetch(url);
 
   if (!res.ok) {
     throw new Error(`Ошибка по адресу ${url}, статус ${res.status}`);
@@ -74,10 +74,10 @@ const validName = str => {
 const toggleModal = () => $modal.classList.toggle('is-open');
 
 const toggleModalAuth = () => {
-    $modalAuth.classList.toggle('is-open');
-    $loginInput.style.borderColor = '';
+  $modalAuth.classList.toggle('is-open');
+  $loginInput.style.borderColor = '';
 
-    $modalAuth.classList.contains('is-open') ? disableScroll() : enableScroll();
+  $modalAuth.classList.contains('is-open') ? disableScroll() : enableScroll();
 };
 
 const clearForm = () => {
@@ -85,73 +85,69 @@ const clearForm = () => {
   $logInForm.reset();
 };
 
-// $buttonAuth.addEventListener('click', toggleModalAuth);
-// $closeAuth.addEventListener('click', toggleModalAuth);
-
-//?  optional
 const returnMain = () => {
   $containerPromo.classList.remove('hide');
   swiper.init();
   $restaurants.classList.remove('hide');
   $menu.classList.add('hide');
-}
+};
 
 const authorized = () => {
-    const logOut = () => {
-      _login = null;
-      _cart.length = 0;
-      localStorage.removeItem('Delivery');
+  const logOut = () => {
+    _login = null;
+    _cart.length = 0;
+    
+    localStorage.removeItem('Delivery');
 
-      $buttonAuth.style.display = '';
-      $userName.style.display = '';
-      $buttonOut.style.display = '';
-      $cartButton.style.display = '';
+    $buttonAuth.style.display = '';
+    $userName.style.display = '';
+    $buttonOut.style.display = '';
+    $cartButton.style.display = '';
 
-      $buttonOut.removeEventListener('click', logOut);
+    $buttonOut.removeEventListener('click', logOut);
 
-      checkAuth();
-      returnMain(); //-> line 69
-    };
+    checkAuth();
+    returnMain();
+  };
 
-    $userName.textContent = _login;
+  $userName.textContent = _login;
+  $buttonAuth.style.display = 'none';
+  $userName.style.display = 'inline';
+  $buttonOut.style.display = 'flex';
+  $cartButton.style.display = 'flex';
 
-    $buttonAuth.style.display = 'none';
-    $userName.style.display = 'inline';
-    $buttonOut.style.display = 'flex'; //block
-    $cartButton.style.display = 'flex'; //block
-
-    $buttonOut.addEventListener('click', logOut);
+  $buttonOut.addEventListener('click', logOut);
 };
 
 const notAuthorized = () => {
-    const logIn = e => {
-      e.preventDefault();
+  const logIn = e => {
+    e.preventDefault();
 
-      if (validName($loginInput.value)) {
-        _login = $loginInput.value;
-        localStorage.setItem('Delivery', _login);
+    if (validName($loginInput.value)) {
+      _login = $loginInput.value;
+      localStorage.setItem('Delivery', _login);
 
-        toggleModalAuth();
-        fetchCart();
+      toggleModalAuth();
+      fetchCart();
 
-        $buttonAuth.removeEventListener('click', toggleModalAuth);
-        $closeAuth.removeEventListener('click', toggleModalAuth);
-        $logInForm.removeEventListener('submit', logIn);
+      $buttonAuth.removeEventListener('click', toggleModalAuth);
+      $closeAuth.removeEventListener('click', toggleModalAuth);
+      $logInForm.removeEventListener('submit', logIn);
+      $logInForm.reset();
 
-        $logInForm.reset();
-        checkAuth();
-      } else {
-        $loginInput.style.borderColor = '#ff0000';
-        $loginInput.value = '';
-      }
-    };
+      checkAuth();
+    } else {
+      $loginInput.style.borderColor = '#ff0000';
+      $loginInput.value = '';
+    }
+  };
 
-    $buttonAuth.addEventListener('click', toggleModalAuth);
-    $closeAuth.addEventListener('click', toggleModalAuth);
-    $logInForm.addEventListener('submit', logIn);
-    $modalAuth.addEventListener('click', ({ target }) => {
-      target.classList.contains('is-open') && toggleModalAuth();
-    });
+  $buttonAuth.addEventListener('click', toggleModalAuth);
+  $closeAuth.addEventListener('click', toggleModalAuth);
+  $logInForm.addEventListener('submit', logIn);
+  $modalAuth.addEventListener('click', ({ target }) => {
+    target.classList.contains('is-open') && toggleModalAuth();
+  });
 };
 
 $buttonAuth.addEventListener('click', clearForm);
@@ -191,7 +187,7 @@ const createCardRestaurant = restaurant => {
 
 const createCardGood = goods => {
   const { description, id, image, name, price } = goods;
-// console.log(goods);
+
   const $card = document.createElement('div');
   $card.className = 'card';
 
@@ -225,8 +221,6 @@ const openGoods = ({ target }) => {
     const restaurant = target.closest('.card-restaurant');
 
     if (restaurant) {
-      //const info = restaurant.dataset.info;
-      //const { name, kitchen, price, stars } = info.split(',');
       const { name, kitchen, price, stars } = restaurant.info;
 
       $cardsMenu.textContent = '';
@@ -253,14 +247,11 @@ const addToCart = ({ target }) => {
     const title = card.querySelector('.card-title-reg').textContent;
     const cost = card.querySelector('.card-price').textContent;
     const id = buttonAddToCart.id;
-    // console.log(title, id, card);
 
     const food = _cart.find(item => item.id === id);
-    // console.log(food, 'FOOD find');
 
     food ? food.count += 1 : _cart.push({id, title, cost, count: 1});
 
-    console.log(_cart, 'CART after');
     saveCart();
   }
 };
@@ -307,7 +298,6 @@ const changeCount = ({ target }) => {
     target.classList.contains('counter-plus') && food.count++;
 
     renderCart();
-    // saveCart();
   }
 };
 
@@ -318,17 +308,19 @@ const init = () => {
     renderCart();
     toggleModal();
   });
+
   $buttonClearCart.addEventListener('click', () => {
     _cart.length = 0;
 
     renderCart();
-    toggleModal();//???
+    toggleModal();
   });
+
   $modalBody.addEventListener('click', changeCount);
   $cardsMenu.addEventListener('click', addToCart);
   $close.addEventListener('click', toggleModal);
   $cardsRestaurants.addEventListener('click', openGoods);
-  $logo.addEventListener('click', returnMain); //?-> line 69
+  $logo.addEventListener('click', returnMain);
 
   $logo.addEventListener('click', () => {
     $containerPromo.classList.remove('hide');
@@ -339,10 +331,9 @@ const init = () => {
 
   checkAuth();
 
-  $inputSearch.addEventListener('keypress', e => { //keyup?
+  $inputSearch.addEventListener('keypress', e => {
     if (e.charCode === 13) {
       const value = e.target.value.trim();
-      console.log(value, 'input');
 
       if (!value) {
         e.target.style.backgroundColor = '#ff0000';
@@ -353,19 +344,16 @@ const init = () => {
         return;
       }
 
-      //if (value.length < 3) return;
-
       getData('./db/partners.json')
         .then(data => data.map(partner => partner.products))
         .then(linkProducts => {
           $cardsMenu.textContent = '';
-          console.log(linkProducts);
 
           linkProducts.forEach(link => getData(`./db/${link}`)
             .then(data => {
-              console.log(data, 'data');
               const resultSearch = data.filter(item => {
                 const name = item.name.toLowerCase();
+
                 return name.includes(value.toLowerCase());
               });
 
@@ -377,7 +365,7 @@ const init = () => {
               $restaurantTitle.textContent = 'Результат поиска';
               $restaurantRating.textContent = '';
               $restaurantPrice.textContent = '';
-              $restaurantCategory.textContent = 'разная кухня';
+              $restaurantCategory.textContent = 'Различная кухня';
 
               resultSearch.forEach(createCardGood);
             })
@@ -388,14 +376,3 @@ const init = () => {
 };  
 
 init();
-
-// new Swiper('.swiper-container', {
-//   sliderPerView: 1,
-//   loop: true,
-//   autoplay: true,
-//   effect: 'coverflow',
-//   scrollbar: {
-//     el: 'swiper-scrollbar',
-//     draggable: true,
-//   },
-// });
